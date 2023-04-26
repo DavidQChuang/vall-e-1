@@ -40,6 +40,8 @@ def _load_quants(path) -> Tensor:
 @cache
 def _get_phones(path):
     path = _replace_file_extension(path, ".phn.txt")
+    if not path.exists():
+      print(f"Expected file at {path} doesn't exist")
     with open(path, "r", encoding="utf8") as f:
         content = f.read()
     return ["<s>"] + content.split() + ["</s>"]
@@ -87,8 +89,9 @@ class VALLEDatset(Dataset):
         self.min_phones = min_phones
         self.max_phones = max_phones
 
+        print("Validating phonemes")
         self.paths = [
-            path for path in paths if _validate(path, self.min_phones, self.max_phones)
+            path for path in tqdm(paths) if _validate(path, self.min_phones, self.max_phones)
         ]
 
         self.spkr_symmap = spkr_symmap or self._get_spkr_symmap()
@@ -97,8 +100,9 @@ class VALLEDatset(Dataset):
 
         self.paths_by_spkr_name = self._get_paths_by_spkr_name(extra_paths_by_spkr_name)
 
+        print("Getting paths with >1 per speaker")
         self.paths = [
-            p for p in self.paths if len(self.paths_by_spkr_name[cfg.get_spkr(p)]) > 1
+            p for p in tqdm(self.paths) if len(self.paths_by_spkr_name[cfg.get_spkr(p)]) > 1
         ]
 
         if len(self.paths) == 0 and training:

@@ -97,3 +97,4 @@ cfg = Config.from_cli()
 
 if __name__ == "__main__":
     print(cfg)
+    print(cfg.ds_cfg)
